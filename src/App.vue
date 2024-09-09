@@ -1,9 +1,12 @@
 <script setup>
-
+import Header from '@/components/navigation/header.vue';
 </script>
 
 <template>
- <router-view/>
+  <div>
+    <Header/>
+    <router-view/>
+  </div>
 </template>
 
 <style scoped>
