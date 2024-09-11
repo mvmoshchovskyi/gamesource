@@ -1,24 +1,51 @@
 <script setup>
-import {ref} from "vue";
-import {Field, Form} from "vee-validate";
+import { ref } from "vue";
+import { Field, Form } from "vee-validate";
 import * as yup from "yup";
+
+import { useToast } from "vue-toast-notification";
+import { useUserStore } from "@/stores/user.js";
+
+const userStore = useUserStore();
+const $toast = useToast();
 
 const type = ref(false);
 const formSchema = yup.object({
   email: yup.string().required("Email is required").email("Not valid email"),
   password: yup.string().min(6).required("Password is required"),
-
 })
 
-function onSubmit(values, {resetForm}) {
-  console.log(values)
+function onSubmit(values, { resetForm }) {
+  if (type.value) {
+    userStore.register(values)
+  } else {
+    userStore.signIn(values)
+  }
 }
+
+userStore.$onAction(({ name, after, onError }) => {
+  if (name === 'register' || name === 'signIn') {
+    after(() => {
+      $toast.success('Welcome !!')
+    })
+    onError((error) => {
+      $toast.error(error.message)
+    })
+  }
+})
 
 </script>
 
 <template>
   <div class="signin_container">
-    <Form @submit.prevent="onSubmit" :validation-schema="formSchema">
+
+    <div class="text-center" v-show="userStore.loading">
+      <v-progress-circular color="primary" indeterminate/>
+    </div>
+    <Form
+        @submit="onSubmit"
+        :validation-schema="formSchema"
+    >
       <h1 v-text="!type ? 'Sign in' : 'Register'"></h1>
       <div class="form_group">
         <Field

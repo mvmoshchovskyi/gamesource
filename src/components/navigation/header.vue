@@ -1,5 +1,7 @@
 <script setup>
+import { useUserStore } from "@/stores/user.js";
 
+const userStore = useUserStore();
 </script>
 
 <template>
@@ -12,13 +14,13 @@
       </div>
       <div>
         <ul>
-          <li>
+          <li v-if="!userStore.auth">
             <router-link :to="{ name: 'signin' }">
               Sign in
             </router-link>
           </li>
-          <span>
-            <li>
+          <span v-else>
+            <li @click="userStore.signOut">
               <span>
                 Logout
               </span>
