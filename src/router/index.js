@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { isAuth, isLoggedIn } from "@/composables/auth.js";
 
 import Home from '@/components/home/index.vue'
 import Signin from "@/components/user/signin.vue"
@@ -22,18 +23,18 @@ const router = createRouter({
         {
             path: '/signin',
             name: 'signin',
-            component: Signin
+            component: Signin,
+            beforeEnter: isLoggedIn,
         },
         {
             path: '/user/dashboard',
             component: Dashboard,
+            beforeEnter: isAuth,
             children: [
                 { path: '', component: DashboardMain, name: 'dashboard' },
                 { path: 'profile', component: UserProfile, name: 'user_profile' },
                 { path: 'articles', component: AdminArticles, name: 'admin_articles' },
-                { path: 'articles', component: AdminArticles, name: 'admin_articles' },
-                { path: 'articles/add', component: AdminAddArticle, name: 'admin_articles' },
-                { path: 'articles/edit', component: AdminEditArticle, name: 'admin_add' },
+                { path: 'articles/add', component: AdminAddArticle, name: 'admin_add' },
                 { path: 'articles/edit/:id', component: AdminEditArticle, name: 'admin_edit' },
             ]
         },
