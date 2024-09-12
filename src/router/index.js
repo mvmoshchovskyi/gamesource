@@ -3,14 +3,14 @@ import { isAuth, isLoggedIn } from "@/composables/auth.js";
 
 import Home from '@/components/home/index.vue'
 import Signin from "@/components/user/signin.vue"
-
+import Article from '@/components/articles/article.vue'
 import Dashboard from "@/components/user/dashboard/index.vue"
 import DashboardMain from "@/components/user/dashboard/main.vue"
 import UserProfile from "@/components/user/dashboard/pages/user_profile.vue"
 import AdminArticles from "@/components/user/dashboard/admin/articles.vue"
 import AdminAddArticle from "@/components/user/dashboard/admin/add.vue"
 import AdminEditArticle from "@/components/user/dashboard/admin/edit.vue"
-import * as path from "node:path";
+import NotFound from '@/components/404.vue'
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -24,7 +24,12 @@ const router = createRouter({
             path: '/signin',
             name: 'signin',
             component: Signin,
-            // beforeEnter: isLoggedIn,
+            beforeEnter: isLoggedIn,
+        },
+        {
+            path: '/article/:id',
+            component: Article,
+            name: 'article'
         },
         {
             path: '/user/dashboard',
@@ -38,6 +43,11 @@ const router = createRouter({
                 { path: 'articles/edit/:id', component: AdminEditArticle, name: 'admin_edit' },
             ]
         },
+        {
+            path: '/:notFound(.*)*',
+            component: NotFound,
+            name: '404'
+        }
     ]
 })
 
