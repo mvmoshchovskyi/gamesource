@@ -14,7 +14,6 @@ const loading = ref(false);
 const ratingArray = [0, 1, 2, 3, 4, 5];
 const veditor = ref('');
 
-
 function onSubmit(values, { resetForm }) {
   loading.value = true;
   articleStore.addArticle(values)
@@ -32,7 +31,6 @@ function onSubmit(values, { resetForm }) {
 function updateEditor(value) {
   veditor.value = value
 }
-
 
 </script>
 

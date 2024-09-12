@@ -1,53 +1,81 @@
-import { defineStore } from 'pinia';
+import { defineStore } from "pinia";
 import router from '@/router';
-import { AUTH, DB } from '@/utils/firebase.js';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { getDoc, doc, setDoc, updateDoc } from 'firebase/firestore'
-import errorCodes from "@/utils/fbcodes.js";
+
+import { AUTH, DB } from '@/utils/firebase';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { getDoc, doc, setDoc, updateDoc } from 'firebase/firestore';
+import errorCodes from "@/utils/fbcodes";
+
+import { useToast } from "vue-toast-notification";
+
+const $toast = useToast();
 
 const DEFAULT_USER = {
     uid: null,
     email: null,
     firstname: null,
     lastname: null,
-    isAdmin: false,
+    isAdmin: null
 }
+
 export const useUserStore = defineStore('user', {
     state: () => ({
         loading: false,
         user: DEFAULT_USER,
-        auth: false,
+        auth: false
     }),
-    getters: {},
+    getters: {
+        getUserData(state) {
+            return state.user
+        },
+        getUserId(state) {
+            return state.user.uid
+        }
+    },
     actions: {
         setUser(user) {
             this.user = { ...this.user, ...user };
             this.auth = true;
         },
-        async signOut(uid){
+        async updateProfile(formData) {
+            try {
+                const userRef = doc(DB, 'users', this.getUserId);
+                await updateDoc(userRef, {
+                    ...formData
+                });
+
+                this.setUser(formData);
+                $toast.success('Updated !!!')
+                return true;
+            } catch (error) {
+                $toast.error(error.message)
+            }
+        },
+        async signOut() {
             await signOut(AUTH);
             this.user = DEFAULT_USER;
             this.auth = false;
-            await router.push({ name: 'home' });
+            await router.push({ name: 'home' })
         },
-        async autosignin(uid){
+        async autosignin(uid) {
             try {
-                const userData = await this.getUser(uid);
-                this.setUser(userData);
+                const userData = await this.getUserProfile(uid);
+                /// UPDATE LOCAL STATE
+                this.setUser(userData)
                 return true;
-            } catch (e) {
-                console.log(e);
+            } catch (error) {
+                console.log(error)
             }
         },
         async getUserProfile(uid) {
             try {
                 const userRef = await getDoc(doc(DB, 'users', uid));
-                if (!userRef) {
-                    throw new Error('Could not find user');
+                if (!userRef.exists()) {
+                    throw new Error('Could not find user !!')
                 }
                 return userRef.data();
-            } catch (e) {
-                throw new Error(errorCodes(e.code));
+            } catch (error) {
+                throw new Error(error)
             }
         },
         async signIn(formData) {
@@ -60,13 +88,13 @@ export const useUserStore = defineStore('user', {
                     formData.password
                 );
 
-                const userData = await this.getUserProfile(response.user.uid);
+                const userData = await this.getUserProfile(response.user.uid)
 
                 this.setUser(userData);
 
-                await router.push({ name: 'dashboard' });
-            } catch (e) {
-                throw new Error(errorCodes(e.code));
+                await router.push({ name: 'dashboard' })
+            } catch (error) {
+                throw new Error(errorCodes(error.code))
             } finally {
                 this.loading = false;
             }
@@ -86,17 +114,16 @@ export const useUserStore = defineStore('user', {
                     email: response.user.email,
                     isAdmin: false
                 }
-
                 await setDoc(doc(DB, 'users', response.user.uid), newUser);
 
                 this.setUser(newUser);
 
-                await router.push({ name: 'dashboard' });
-            } catch (e) {
-                throw new Error(errorCodes(e.code));
+                await router.push({ name: 'dashboard' })
+            } catch (error) {
+                throw new Error(errorCodes(error.code))
             } finally {
                 this.loading = false;
             }
         }
-    },
+    }
 })
